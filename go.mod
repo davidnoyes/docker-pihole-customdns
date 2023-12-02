@@ -1,4 +1,4 @@
-module docker-pihole-ddns
+module docker-pihole-customdns
 
 go 1.21.4
 

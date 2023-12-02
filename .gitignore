@@ -1,2 +1,3 @@
-docker-pihole-ddns
+docker-pihole-customdns
 .vscode
+build

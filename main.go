@@ -17,7 +17,8 @@ import (
 	"github.com/docker/docker/client"
 )
 
-const targetKey = "uk.noyes.docker-pihole-ddns.domain"
+const targetKey = "uk.noyes.docker-pihole-customdns.domain"
+
 type Action = string
 
 const (
@@ -39,7 +40,7 @@ var authCode string
 var pihole_url string
 
 func main() {
-	
+
 	loadArguments()
 
 	pihole_url += "/admin/api.php"
@@ -211,7 +212,7 @@ func isRelevantEvent(event events.Message) (bool, Action, string) {
 }
 
 func createDNS(containerName string, domainName string, ipAddress string) {
-	
+
 	// Make the API request with the required parameters
 	apiURL := pihole_url + "?customdns"
 	apiURL += "&auth=" + authCode
