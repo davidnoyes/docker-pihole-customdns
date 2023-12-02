@@ -54,7 +54,7 @@ build_dir:
 	@mkdir -p $(build_dir)
 	@mkdir -p $(darwin_amd64) $(darwin_arm64) $(linux_amd64) $(linux_arm) $(linux_arm64) $(windows_amd64)
 
-.PHONY: build-all
+.PHONY: build_all
 build-all: darwin_amd64 darwin_arm64 linux_amd64 linux_arm linux_arm64 windows_amd64
 
 .PHONY: docker_build
@@ -65,3 +65,8 @@ docker_build:
 .PHONY: docker_run
 docker_run:
 	@$(DOCKER_CMD) run -d --name $(APP_NAME) --restart=unless-stopped  -e DPD_PIHOLE_URL=$(DPD_PIHOLE_URL) -e DPD_DOCKER_HOST_IP=$(DPD_DOCKER_HOST_IP) -e DPD_PIHOLE_API_TOKEN=$(DPD_PIHOLE_API_TOKEN) $(APP_NAME):$(VERSION)
+
+.PHONY: update_modules
+update_modules:
+	@go get -u
+	@go mod tidy
