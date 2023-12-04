@@ -22,6 +22,16 @@ docker run --name docker-pihole-customdns -d --restart=unless-stopped -v /var/ru
 
 Replace the values for `DPC_PIHOLE_URL`, `DPC_DOCKER_HOST_IP` & `DPC_PIHOLE_API_TOKEN` as appropriate
 
+## Docker Label
+The conatiner label to be applied to service containers is: 
+
+`docker-pihole-customdns.domain=`
+
+It can be applied in the following way:
+```shell
+docker run -d --name nginx -l docker-pihole-customdns.domain=my-service.int.my-domain.net nginx
+```
+
 ## Docker Compose
 ```yaml
 version: "3.8"
@@ -63,6 +73,7 @@ Usage of ./docker-pihole-customdns:
   -piholeurl2 string
         Second Pi-hole URL (optional e.g. http://pi.hole)
 ```
+
 
 ## Refrences
 ### Pi-hole DNS API
