@@ -5,6 +5,7 @@ Facilitate Pi-hole DNS entry automation for Docker services efficiently with doc
 Perfect for use when running your services behind a proxy such as Traefik or nginx. Instead of manually adding and removing DNS entries for your self-hosted Docker applications in Pi-hole, specify the domain to use in a label on your container and let Docker Pi-hole Custom DNS create the DNS entry for you.
 
 ## Supports
+
 * DNS A record management
 * DNS CNAME record management
 * Up to two Pi-hole DNS servers
@@ -16,6 +17,7 @@ docker pull ghcr.io/davidnoyes/docker-pihole-customdns:latest
 ```
 
 ## Docker Usage
+
 ```shell
 docker run --name docker-pihole-customdns -d --restart=unless-stopped -v /var/run/docker.sock:/var/run/docker.sock:ro -e DPC_PIHOLE_URL=http://pi.hole -e DPC_DOCKER_HOST_IP=198.51.100.0 -e DPC_PIHOLE_API_TOKEN=abcdefghijklmnopqrstuvwxyz
 ```
@@ -23,6 +25,7 @@ docker run --name docker-pihole-customdns -d --restart=unless-stopped -v /var/ru
 Replace the values for `DPC_PIHOLE_URL`, `DPC_DOCKER_HOST_IP` & `DPC_PIHOLE_API_TOKEN` as appropriate
 
 ## Docker Label
+
 The conatiner label to be applied to service containers is: 
 
 `docker-pihole-customdns.domain=`
@@ -33,6 +36,7 @@ docker run -d --name nginx -l docker-pihole-customdns.domain=my-service.int.my-d
 ```
 
 ## Docker Compose
+
 ```yaml
 version: "3.8"
 services:
@@ -51,6 +55,7 @@ services:
 ```
 
 ### Environment Variables
+
 | Variable | Description |
 |-|-|
 | `DPC_PIHOLE_API_TOKEN` | Pi-hole API Token. |
@@ -60,6 +65,7 @@ services:
 | `DPC_PIHOLE_URL_2` | Second Pi-hole URL (optional) |
 
 ## Binary Usage
+
 ```shell
 Usage of ./docker-pihole-customdns:
   -apitoken string
@@ -76,6 +82,7 @@ Usage of ./docker-pihole-customdns:
 
 
 ## Refrences
+
 ### Pi-hole DNS API
 
 Pi-hole API token can be obtained here: http://pi.hole/admin/settings.php?tab=api
