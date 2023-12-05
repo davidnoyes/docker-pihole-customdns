@@ -91,3 +91,5 @@ Pi-hole API token can be obtained here: http://pi.hole/admin/settings.php?tab=ap
 [CustomDNS](docs/CustomDNS.md)
 
 [CustomCNAME](docs/CustomCNAME.md)
+
+<img referrerpolicy="no-referrer-when-downgrade" src="https://static.scarf.sh/a.png?x-pxid=d392e053-6689-4d55-98a0-70f0ed688db1" />
