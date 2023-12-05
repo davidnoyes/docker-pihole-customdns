@@ -13,8 +13,16 @@ Perfect for use when running your services behind a proxy such as Traefik or ngi
 ## Docker Image
 
 ```shell
-docker pull ghcr.io/davidnoyes/docker-pihole-customdns:latest
+docker pull download.noyes.uk/davidnoyes/docker-pihole-customdns:latest
 ```
+
+*(Images hosted by ghcr.io with a custom domain)*
+
+**OS / Arch**
+
+* linux/amd64
+* linux/arm/v7
+* linux/arm64
 
 ## Docker Usage
 
