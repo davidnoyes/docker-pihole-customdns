@@ -64,7 +64,7 @@ docker_build:
 
 .PHONY: docker_run
 docker_run:
-	@$(DOCKER_CMD) run -d --name $(APP_NAME) --restart=unless-stopped  -e DPD_PIHOLE_URL=$(DPD_PIHOLE_URL) -e DPD_DOCKER_HOST_IP=$(DPD_DOCKER_HOST_IP) -e DPD_PIHOLE_API_TOKEN=$(DPD_PIHOLE_API_TOKEN) $(APP_NAME):$(VERSION)
+	@$(DOCKER_CMD) run -d --name $(APP_NAME) --restart=unless-stopped  -e DPC_PIHOLE_URL=$(DPC_PIHOLE_URL) -e DPC_DEFAULT_TARGET_IP=$(DPC_DEFAULT_TARGET_IP) -e DPC_PIHOLE_API_TOKEN=$(DPC_PIHOLE_API_TOKEN) $(APP_NAME):$(VERSION)
 
 .PHONY: update_modules
 update_modules:
