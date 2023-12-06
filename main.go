@@ -164,8 +164,12 @@ func reconcileExistingDNS(cli *client.Client){
 }
 
 func getExistingDNS(pihole_url string) ([][]string, error) {
+
 	// Make the API request to get existing DNS entries
 	apiURL := pihole_url + "?customdns"
+	if defaultTargetIP == "" {
+		apiURL = pihole_url + "?customcname"
+	}
 	apiURL += "&auth=" + authCode
 	apiURL += "&action=get"
 	resp, err := http.Get(apiURL)
@@ -207,8 +211,12 @@ func checkExistingContainers(pihole_url string, cli *client.Client, existingDNS 
 
 func isDNSMissing(labelValue string, existingDNS [][]string) bool {
 	// Check if the DNS entry already exists
+	searchRecord := defaultTargetIP
+	if defaultTargetIP == "" {
+		searchRecord = defaultTargetDomain
+	}
 	for _, existing := range existingDNS {
-		if len(existing) == 2 && existing[0] == labelValue && existing[1] == defaultTargetIP {
+		if len(existing) == 2 && existing[0] == labelValue && existing[1] == searchRecord {
 			return false
 		}
 	}
