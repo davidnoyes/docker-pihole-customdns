@@ -35,7 +35,8 @@ type ExistingDNSResponse struct {
 	Data [][]string `json:"data"`
 }
 
-var hostIP string
+var defaultTargetIP string
+var defaultTargetDomain string
 var authCode string
 var pihole_url string
 var authCode2 string
@@ -57,15 +58,20 @@ func main() {
 }
 
 func loadArguments() {
-	flag.StringVar(&hostIP, "hostip", "", "Docker host IP address")
+	flag.StringVar(&defaultTargetIP, "targetip", "", "Default target IP address for the Docker host")
+	flag.StringVar(&defaultTargetDomain, "targetdomain", "", "Default target domain address for the Docker host")
 	flag.StringVar(&authCode, "apitoken", "", "Pi-hole API token")
 	flag.StringVar(&pihole_url, "piholeurl", "", "Pi-hole URL (http://pi.hole)")
 	flag.StringVar(&authCode2, "apitoken2", "", "Second Pi-hole API token")
 	flag.StringVar(&pihole_url2, "piholeurl2", "", "Second Pi-hole URL (http://pi.hole)")
 	flag.Parse()
 
-	if hostIP == "" {
-		hostIP = os.Getenv("DPC_DOCKER_HOST_IP")
+	if defaultTargetIP == "" {
+		defaultTargetIP = os.Getenv("DPC_DEFAULT_TARGET_IP")
+	}
+
+	if defaultTargetDomain == "" {
+		defaultTargetDomain = os.Getenv("DPC_DEFAULT_TARGET_DOMAIN")
 	}
 
 	if authCode == "" {
@@ -84,8 +90,10 @@ func loadArguments() {
 		pihole_url2 = os.Getenv("DPC_PIHOLE_URL_2")
 	}
 
-	if hostIP == "" {
-		log.Fatal("Docker host IP is not provided. Set it using the -hostip flag or DPC_DOCKER_HOST_IP environment variable.")
+	if defaultTargetIP == "" && defaultTargetDomain == "" {
+		log.Fatal("Default Docker host target IP or target domain are not provided. Set either using the -targetip flag (DPC_DEFAULT_TARGET_IP) or -targetdomain (DPC_DEFAULT_TARGET_DOMAIN).")
+	} else if defaultTargetIP != "" && defaultTargetDomain != "" {
+		log.Fatal("Both default target IP and target domain are set. Only one default can be used.")
 	}
 
 	if authCode == "" {
@@ -192,7 +200,7 @@ func checkExistingContainers(pihole_url string, cli *client.Client, existingDNS 
 		if found && isDNSMissing(labelValue, existingDNS) {
 			// Strip off the "/" prefix from the container name
 			containerName := strings.TrimPrefix(container.Names[0], "/")
-			createDNS(pihole_url, containerName, labelValue, hostIP)
+			createDNSRecord(pihole_url, containerName, labelValue)
 		}
 	}
 }
@@ -200,7 +208,7 @@ func checkExistingContainers(pihole_url string, cli *client.Client, existingDNS 
 func isDNSMissing(labelValue string, existingDNS [][]string) bool {
 	// Check if the DNS entry already exists
 	for _, existing := range existingDNS {
-		if len(existing) == 2 && existing[0] == labelValue && existing[1] == hostIP {
+		if len(existing) == 2 && existing[0] == labelValue && existing[1] == defaultTargetIP {
 			return false
 		}
 	}
@@ -222,14 +230,14 @@ func watchContainers(ctx context.Context, cli *client.Client) {
 			relevant, action, label := isRelevantEvent(event)
 			if relevant {
 				if action == CreateAction {
-					createDNS(pihole_url, event.Actor.Attributes["name"], label, hostIP)
+					createDNSRecord(pihole_url, event.Actor.Attributes["name"], label)
 					if pihole_url2 != "" {
-						createDNS(pihole_url2, event.Actor.Attributes["name"], label, hostIP)
+						createDNSRecord(pihole_url2, event.Actor.Attributes["name"], label)
 					}
 				} else if action == RemoveAction {
-					removeDNS(pihole_url, event.Actor.Attributes["name"], label, hostIP)
+					removeDNSRecord(pihole_url, event.Actor.Attributes["name"], label)
 					if pihole_url2 != "" {
-						removeDNS(pihole_url2, event.Actor.Attributes["name"], label, hostIP)
+						removeDNSRecord(pihole_url2, event.Actor.Attributes["name"], label)
 					}
 				}
 
@@ -251,7 +259,23 @@ func isRelevantEvent(event events.Message) (bool, Action, string) {
 	return false, "", ""
 }
 
-func createDNS(pihole_url string, containerName string, domainName string, ipAddress string) {
+func createDNSRecord(pihole_url string, containerName string, domainName string) {
+	if defaultTargetIP != "" {
+		createARecord(pihole_url, containerName, domainName, defaultTargetIP)
+	} else {
+		createCNAMERecord(pihole_url, containerName, domainName, defaultTargetDomain)
+	}
+}
+
+func removeDNSRecord(pihole_url string, containerName string, domainName string) {
+	if defaultTargetIP != "" {
+		removeARecord(pihole_url, containerName, domainName, defaultTargetIP)
+	} else {
+		removeCNAMERecord(pihole_url, containerName, domainName, defaultTargetDomain)
+	}
+}
+
+func createARecord(pihole_url string, containerName string, domainName string, ipAddress string) {
 
 	// Make the API request with the required parameters
 	apiURL := pihole_url + "?customdns"
@@ -282,12 +306,73 @@ func createDNS(pihole_url string, containerName string, domainName string, ipAdd
 	}
 }
 
-func removeDNS(pihole_url string, containerName string, domainName string, ipAddress string) {
+func removeARecord(pihole_url string, containerName string, domainName string, ipAddress string) {
 	// Make the API request with the required parameters
 	apiURL := pihole_url + "?customdns"
 	apiURL += "&auth=" + authCode
 	apiURL += "&action=delete"
 	apiURL += "&ip=" + ipAddress
+	apiURL += "&domain=" + domainName
+
+	resp, err := http.Get(apiURL)
+	if err != nil {
+		log.Printf("Error making API request: %v", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Decode the JSON response
+	var apiResponse APIResponse
+	if err := json.NewDecoder(resp.Body).Decode(&apiResponse); err != nil {
+		log.Printf("Error decoding JSON response: %v", err)
+		return
+	}
+
+	// Check the "success" attribute in the response
+	if apiResponse.Success {
+		log.Printf("API for %s delete request successful for container %s - %s", pihole_url, containerName, domainName)
+	} else {
+		log.Printf("API for %s delete request failed for container %s - %s: %s", pihole_url, containerName, domainName, apiResponse.Message)
+	}
+}
+
+func createCNAMERecord(pihole_url string, containerName string, domainName string, targetName string) {
+
+	// Make the API request with the required parameters
+	apiURL := pihole_url + "?customcname"
+	apiURL += "&auth=" + authCode
+	apiURL += "&action=add"
+	apiURL += "&target=" + targetName
+	apiURL += "&domain=" + domainName
+
+	resp, err := http.Get(apiURL)
+	if err != nil {
+		log.Printf("Error making API request: %v", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Decode the JSON response
+	var apiResponse APIResponse
+	if err := json.NewDecoder(resp.Body).Decode(&apiResponse); err != nil {
+		log.Printf("Error decoding JSON response: %v", err)
+		return
+	}
+
+	// Check the "success" attribute in the response
+	if apiResponse.Success {
+		log.Printf("API for %s add request successful for container %s - %s", pihole_url, containerName, domainName)
+	} else {
+		log.Printf("API for %s add request failed for container %s - %s: %s", pihole_url, containerName, domainName, apiResponse.Message)
+	}
+}
+
+func removeCNAMERecord(pihole_url string, containerName string, domainName string, targetName string) {
+	// Make the API request with the required parameters
+	apiURL := pihole_url + "?customcname"
+	apiURL += "&auth=" + authCode
+	apiURL += "&action=delete"
+	apiURL += "&target=" + targetName
 	apiURL += "&domain=" + domainName
 
 	resp, err := http.Get(apiURL)
