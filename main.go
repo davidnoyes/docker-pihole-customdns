@@ -61,9 +61,9 @@ func loadArguments() {
 	flag.StringVar(&defaultTargetIP, "targetip", "", "Default target IP address for the Docker host")
 	flag.StringVar(&defaultTargetDomain, "targetdomain", "", "Default target domain address for the Docker host")
 	flag.StringVar(&authCode, "apitoken", "", "Pi-hole API token")
-	flag.StringVar(&pihole_url, "piholeurl", "", "Pi-hole URL (http://pi.hole)")
-	flag.StringVar(&authCode2, "apitoken2", "", "Second Pi-hole API token")
-	flag.StringVar(&pihole_url2, "piholeurl2", "", "Second Pi-hole URL (http://pi.hole)")
+	flag.StringVar(&pihole_url, "piholeurl", "", "Pi-hole URL (e.g. http://pi.hole)")
+	flag.StringVar(&authCode2, "apitoken2", "", "Second Pi-hole API token (Optional)")
+	flag.StringVar(&pihole_url2, "piholeurl2", "", "Second Pi-hole URL (Optional e.g. http://pi.hole)")
 	flag.Parse()
 
 	if defaultTargetIP == "" {

@@ -69,6 +69,7 @@ services:
 | `DPC_PIHOLE_API_TOKEN` | Pi-hole API Token. |
 | `DPC_PIHOLE_API_TOKEN_2` | Second Pi-hole API Token (Optional)
 | `DPC_DEFAULT_TARGET_IP` | Default target IP address for the Docker host. The IP address used by the http proxy for all docker services on the host. |
+| `DPC_DEFAULT_TARGET_DOMAIN` | Default target domain address for the Docker host. The DNS address used by the http proxy for all docker services on the host. |
 | `DPC_PIHOLE_URL` | Pi-hole URL (e.g. http://pi-hole) |
 | `DPC_PIHOLE_URL_2` | Second Pi-hole URL (optional) |
 
@@ -80,12 +81,14 @@ Usage of ./docker-pihole-customdns:
         Pi-hole API token
   -apitoken2 string
         Second Pi-hole API token (Optional)
-  -targetip string
-        Default target IP address for the Docker host
   -piholeurl string
         Pi-hole URL (e.g. http://pi.hole)
   -piholeurl2 string
         Second Pi-hole URL (Optional e.g. http://pi.hole)
+  -targetdomain string
+        Default target domain address for the Docker host
+  -targetip string
+        Default target IP address for the Docker host
 ```
 
 
