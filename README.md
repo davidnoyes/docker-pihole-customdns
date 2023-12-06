@@ -50,7 +50,7 @@ version: "3.8"
 services:
   docker-pihole-customdns:
     container_name: docker-pihole-customdns
-    image: ghcr.io/davidnoyes/docker-pihole-customdns:latest
+    image: download.noyes.uk/davidnoyes/docker-pihole-customdns:latest
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
