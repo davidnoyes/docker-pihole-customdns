@@ -2,7 +2,7 @@ module docker-pihole-customdns
 
 go 1.21.4
 
-require github.com/docker/docker v24.0.7+incompatible
+require github.com/docker/docker v24.0.9+incompatible
 
 require (
 	github.com/Microsoft/go-winio v0.6.1 // indirect
