@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
@@ -193,7 +194,7 @@ func getExistingDNS(pihole_url string) ([][]string, error) {
 
 func checkExistingContainers(pihole_url string, cli *client.Client, existingDNS [][]string) {
 	// Fetch all existing containers
-	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{All: true})
+	containers, err := cli.ContainerList(context.Background(), container.ListOptions{All: true})
 	if err != nil {
 		log.Fatalf("Error fetching existing containers: %v", err)
 	}
@@ -226,7 +227,7 @@ func isDNSMissing(labelValue string, existingDNS [][]string) bool {
 func watchContainers(ctx context.Context, cli *client.Client) {
 	options := types.EventsOptions{}
 	options.Filters = filters.NewArgs()
-	options.Filters.Add("type", events.ContainerEventType)
+	options.Filters.Add("type", string(events.ContainerEventType))
 	options.Filters.Add("event", CreateAction)
 	options.Filters.Add("event", RemoveAction)
 
@@ -260,7 +261,7 @@ func isRelevantEvent(event events.Message) (bool, Action, string) {
 	// Check if the container has the target key
 	for key, value := range event.Actor.Attributes {
 		if strings.ToLower(key) == targetKey {
-			return true, event.Action, strings.ToLower(value)
+			return true, string(event.Action), strings.ToLower(value)
 		}
 	}
 
