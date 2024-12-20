@@ -1,6 +1,6 @@
 module docker-pihole-customdns
 
-go 1.22.5
+go 1.23.4
 
 require github.com/docker/docker v27.4.1+incompatible
 
